@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_instagram/screens/screens.dart';
 
-import 'cubit/login_cubit.dart';
+import 'cubit/signup_cubit.dart';
 
-class LoginScreen extends StatelessWidget {
-  LoginScreen({Key? key}) : super(key: key);
+class SignUpScreen extends StatelessWidget {
+  SignUpScreen({Key? key}) : super(key: key);
 
-  static const String routeName = '/login';
+  static const String routeName = '/signup';
   static Route route() {
-    return PageRouteBuilder(
+    return MaterialPageRoute(
       settings: const RouteSettings(name: routeName),
-      pageBuilder: (context, _, __) => BlocProvider<LoginCubit>(
-        create: (context) => LoginCubit(authRepository: context.read()),
-        child: LoginScreen(),
+      builder: (context) => BlocProvider<SignUpCubit>(
+        create: (context) => SignUpCubit(authRepository: context.read()),
+        child: SignUpScreen(),
       ),
-      transitionDuration: Duration.zero,
     );
   }
 
@@ -23,14 +21,14 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var cubit = context.read<LoginCubit>();
+    var cubit = context.read<SignUpCubit>();
     return WillPopScope(
       onWillPop: () async => false,
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: BlocConsumer<LoginCubit, LoginState>(
+        child: BlocConsumer<SignUpCubit, SignUpState>(
           listener: (context, state) {
-            if (state.status == LoginStatus.error) {
+            if (state.status == SignUpStatus.error) {
               showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -68,6 +66,18 @@ class LoginScreen extends StatelessWidget {
                             ),
                             TextFormField(
                               decoration:
+                                  const InputDecoration(hintText: 'Username'),
+                              onChanged: (value) =>
+                                  cubit.usernameChanged(value),
+                              validator: (value) => value!.trim().isEmpty
+                                  ? 'Please enter a valid username.'
+                                  : null,
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            TextFormField(
+                              decoration:
                                   const InputDecoration(hintText: 'Email'),
                               onChanged: (value) => cubit.emailChanged(value),
                               validator: (value) => !value!.contains('@')
@@ -91,7 +101,7 @@ class LoginScreen extends StatelessWidget {
                             ),
                             ElevatedButton(
                               onPressed: () => _submitForm(cubit, state.status),
-                              child: const Text('Login'),
+                              child: const Text('Sign Up'),
                             ),
                             const SizedBox(
                               height: 12,
@@ -105,9 +115,8 @@ class LoginScreen extends StatelessWidget {
                                     MaterialStateProperty.all<Color>(
                                         Colors.grey.shade200),
                               ),
-                              onPressed: () => Navigator.of(context)
-                                  .pushNamed(SignUpScreen.routeName),
-                              child: const Text('No account? Sign Up'),
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Go Back to Log In'),
                             ),
                             const SizedBox(
                               height: 12,
@@ -126,9 +135,9 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  void _submitForm(LoginCubit cubit, LoginStatus state) {
-    if (_formKey.currentState!.validate() && state != LoginStatus.submitting) {
-      cubit.logInWithCredentials();
+  void _submitForm(SignUpCubit cubit, SignUpStatus state) {
+    if (_formKey.currentState!.validate() && state != SignUpStatus.submitting) {
+      cubit.signUpWithCredentials();
     }
   }
 }

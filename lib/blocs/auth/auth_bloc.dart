@@ -21,8 +21,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<AuthEvent>((event, emit) async {
       if (event is AuthUserChanged) {
-        emit(state.user != null
-            ? AuthState.authenticated(user: state.user!)
+        emit(event.user != null
+            ? AuthState.authenticated(user: event.user)
             : AuthState.unauthenticated());
       }
       if (event is LogOuRequested) {
