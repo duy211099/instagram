@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../widgets/widgets.dart';
 import 'cubit/signup_cubit.dart';
 
 class SignUpScreen extends StatelessWidget {
@@ -30,11 +31,12 @@ class SignUpScreen extends StatelessWidget {
           listener: (context, state) {
             if (state.status == SignUpStatus.error) {
               showDialog(
+                context: context,
+                builder: (context) => ErrorDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                        title: const Text('Error'),
-                        content: Text(state.failure.message),
-                      ));
+                  content: state.failure.message,
+                ),
+              );
             }
           },
           builder: (context, state) {
@@ -88,6 +90,7 @@ class SignUpScreen extends StatelessWidget {
                               height: 16,
                             ),
                             TextFormField(
+                              obscureText: true,
                               decoration:
                                   const InputDecoration(hintText: 'Password'),
                               onChanged: (value) =>
