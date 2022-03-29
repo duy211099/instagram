@@ -6,7 +6,7 @@ import 'package:flutter_instagram/screens/nav/widgets/widgets.dart';
 import '../../enums/enums.dart';
 
 class NavScreen extends StatelessWidget {
-  const NavScreen({Key? key}) : super(key: key);
+  NavScreen({Key? key}) : super(key: key);
 
   static const String routeName = '/nav';
   static Route route() {
@@ -14,7 +14,7 @@ class NavScreen extends StatelessWidget {
       settings: const RouteSettings(name: routeName),
       pageBuilder: (_, __, ___) => BlocProvider<BottomNavBarCubit>(
         create: (context) => BottomNavBarCubit(),
-        child: const NavScreen(),
+        child: NavScreen(),
       ),
       transitionDuration: Duration.zero,
     );
@@ -28,6 +28,14 @@ class NavScreen extends StatelessWidget {
     BottomNavItem.profile: Icons.account_circle,
   };
 
+  final Map<BottomNavItem, GlobalKey<NavigatorState>> navigatorKeys = {
+    BottomNavItem.feed: GlobalKey<NavigatorState>(),
+    BottomNavItem.search: GlobalKey<NavigatorState>(),
+    BottomNavItem.create: GlobalKey<NavigatorState>(),
+    BottomNavItem.notifications: GlobalKey<NavigatorState>(),
+    BottomNavItem.profile: GlobalKey<NavigatorState>(),
+  };
+
   @override
   Widget build(BuildContext context) {
     var cubit = context.read<BottomNavBarCubit>();
@@ -36,16 +44,44 @@ class NavScreen extends StatelessWidget {
       child: BlocBuilder<BottomNavBarCubit, BottomNavBarState>(
         builder: (context, state) {
           return Scaffold(
-            body: Text('Nav'),
+            body: Stack(
+              children: items
+                  .map((item, _) => MapEntry(
+                      item,
+                      _buildOffStageNavigator(
+                          item, item == state.selectedItem)))
+                  .values
+                  .toList(),
+            ),
             bottomNavigationBar: BottomNavBar(
               items: items,
               selectedItem: state.selectedItem,
               onTap: (index) {
-                cubit.updateSelectedItem(BottomNavItem.values[index]);
+                _selectBottomNavItem(cubit, index, state.selectedItem);
               },
             ),
           );
         },
+      ),
+    );
+  }
+
+  _selectBottomNavItem(
+      BottomNavBarCubit cubit, int index, BottomNavItem selectedItem) {
+    if (selectedItem == BottomNavItem.values[index]) {
+      navigatorKeys[selectedItem]!
+          .currentState!
+          .popUntil((route) => route.isFirst);
+    }
+    cubit.updateSelectedItem(BottomNavItem.values[index]);
+  }
+
+  Widget _buildOffStageNavigator(BottomNavItem currentItem, bool isSelected) {
+    return Offstage(
+      offstage: !isSelected,
+      child: TabNavigator(
+        navigatorKey: navigatorKeys[currentItem]!,
+        item: currentItem,
       ),
     );
   }
